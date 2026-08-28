@@ -125,4 +125,4 @@ def save_results_json(results, file_path):
 
     with open(file_path, "w") as f:
         json.dump(plot_data, f, indent=4)
-    print("Saved Sucssesfull!")
+    print(f"Saved Sucssesfull! {file_path}")
