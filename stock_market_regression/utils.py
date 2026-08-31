@@ -4,6 +4,14 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import (mean_absolute_error,mean_squared_error,r2_score)
 import json
+from typing import List
+from enum import Enum
+
+class AcceptableModelNames(Enum):
+    KNN = "KNN"
+    RF = "RF"
+    DT = "DT"
+    MLP = "MLP"
 
 def read_and_clean_data(file_path, drop_list):
     print("Loading the data...")
@@ -69,10 +77,38 @@ def scale_data(X_train, X_test, y_train, y_test):
     return X_train_norm, X_test_norm, y_train_norm, y_test_norm, target_scaler
 
 print("Traning models ...")
-def train_model(model, X_train_norm, y_train_norm):
+def train_model(model_name: AcceptableModelNames, X_train_norm, y_train_norm):
+    if model_name == AcceptableModelNames.KNN:
+        from sklearn.neighbors import KNeighborsRegressor
+        model = KNeighborsRegressor()
+        model.fit(X_train_norm, y_train_norm)
+    elif model_name == AcceptableModelNames.RF:
+        from sklearn.ensemble import RandomForestRegressor
+        model = RandomForestRegressor()
+    elif model_name == AcceptableModelNames.DT:
+        from sklearn.tree import DecisionTreeRegressor
+        model = DecisionTreeRegressor()
+    elif model_name == AcceptableModelNames.MLP:
+        from sklearn.neural_network import MLPRegressor
+        model = MLPRegressor(hidden_layer_sizes= 100, max_iter= 500)
+    else:
+        print(f"NO MODEL FOUND FOR: {model_name}")
+        raise Exception("The defined model doesn't exist in the acceptable list which includes: [KNN, RF, DT, MLP]")
     model.fit(X_train_norm, y_train_norm)
-
     return model
+
+def train_all_models(models_list: List[str], output_days, scaled_data):
+    results = {}
+    for day in output_days:
+        X_train = scaled_data[day]["X_train_norm"]
+        y_train = scaled_data[day]["y_train_norm"]
+        for model in models_list:
+            print(f"model: {model} - model value: {model.value}")
+            if model not in results:
+                results[model.value] = {}
+            results[model.value][day] = train_model(model, X_train, y_train)
+
+    return results
 
 def predict_model(model, X_test_norm):
     prediction = model.predict(X_test_norm)
