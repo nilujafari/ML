@@ -2,4 +2,6 @@ dataset/
 venv/
 .venv/
 __pycache__/
+.vscode/
+json/
 
